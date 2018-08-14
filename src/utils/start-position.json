@@ -1,0 +1,170 @@
+{
+  "0": {
+    "0": {
+      "code": "&#9814;",
+      "name": "rook",
+      "color": "white"
+    },
+    "1": {
+      "code": "&#9815;",
+      "name": "bishop",
+      "color": "white"
+    },
+    "2": {
+      "code": "&#9816;",
+      "name": "knight",
+      "color": "white"
+    },
+    "3": {
+      "code": "&#9812;",
+      "name": "king",
+      "color": "white"
+    },
+    "4": {
+      "code": "&#9813;",
+      "name": "queen",
+      "color": "white"
+    },
+    "5": {
+      "code": "&#9816;",
+      "name": "knight",
+      "color": "white"
+    },
+    "6": {
+      "code": "&#9815;",
+      "name": "bishop",
+      "color": "white"
+    },
+    "7": {
+      "code": "&#9814;",
+      "name": "rook",
+      "color": "white"
+    }
+  },
+  "1": {
+    "0": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    },
+    "1": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    },
+    "2": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    },
+    "3": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    },
+    "4": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    },
+    "5": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    },
+    "6": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    },
+    "7": {
+      "code": "&#9817;",
+      "name": "pawn",
+      "color": "white"
+    }
+  },
+  "6": {
+    "0": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    },
+    "1": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    },
+    "2": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    },
+    "3": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    },
+    "4": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    },
+    "5": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    },
+    "6": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    },
+    "7": {
+      "code": "&#9823;",
+      "name": "pawn",
+      "color": "black"
+    }
+  },
+  "7": {
+    "0": {
+      "code": "&#9820;",
+      "name": "rook",
+      "color": "black"
+    },
+    "1": {
+      "code": "&#9821;",
+      "name": "bishop",
+      "color": "black"
+    },
+    "2": {
+      "code": "&#9822;",
+      "name": "knight",
+      "color": "black"
+    },
+    "3": {
+      "code": "&#9819;",
+      "name": "queen",
+      "color": "black"
+    },
+    "4": {
+      "code": "&#9818;",
+      "name": "king",
+      "color": "black"
+    },
+    "5": {
+      "code": "&#9822;",
+      "name": "knight",
+      "color": "black"
+    },
+    "6": {
+      "code": "&#9821;",
+      "name": "bishop",
+      "color": "black"
+    },
+    "7": {
+      "code": "&#9820;",
+      "name": "rook",
+      "color": "black"
+    }
+  }
+}
