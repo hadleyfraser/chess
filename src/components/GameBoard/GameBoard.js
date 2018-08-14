@@ -6,8 +6,10 @@ import {
   comparePosition,
   getNewMovedState,
   getPiece,
+  removePiece,
   verifyKingCastle,
-  verifyMove
+  verifyMove,
+  verifyPawnEnPassant
 } from "./GameBoard.helper";
 import Cell from "../Cells/Cell";
 import GamePiece from "../GamePiece/GamePiece";
@@ -16,6 +18,7 @@ import KillList from "../KillList/KillList";
 const startPosition = require("../../utils/start-position.json");
 
 const switchColor = (color) => (color === "#fff" ? "#ccc" : "#fff");
+const changePlaceTurn = (color) => (color === "white" ? "black" : "white");
 
 const emptyCell = {
   hasMoved: false,
@@ -41,9 +44,10 @@ class GameBoardBase extends React.Component {
 
     this.state = {
       board: this._getInitialBoard(),
-      selectedPos: null,
+      killList: [],
       moveList: [],
-      killedPieces: []
+      playerTurn: "white",
+      selectedPos: null
     };
   }
 
@@ -64,7 +68,7 @@ class GameBoardBase extends React.Component {
 
   _clickCell = (clickedPos) => {
     this.setState((prevState) => {
-      const { board, killedPieces, moveList, selectedPos } = prevState;
+      const { board, killList, moveList, playerTurn, selectedPos } = prevState;
       const clickedPiece = getPiece(clickedPos, board);
 
       if (selectedPos) {
@@ -76,52 +80,61 @@ class GameBoardBase extends React.Component {
           const selectedPiece = getPiece(selectedPos, board);
 
           if (verifyKingCastle(board, selectedPiece, selectedPos, clickedPos)) {
-            return getNewMovedState(
-              board,
-              killedPieces,
-              moveList,
-              selectedPos,
-              selectedPiece,
-              clickedPos,
-              clickedPiece,
-              false
-            );
+            return {
+              ...getNewMovedState(
+                board,
+                killList,
+                moveList,
+                selectedPos,
+                selectedPiece,
+                clickedPos,
+                clickedPiece,
+                false
+              ),
+              playerTurn: changePlaceTurn(playerTurn)
+            };
           }
 
-          // const previousMove = moveList.length && moveList[moveList.length - 1];
-          // if (
-          //   previousMove &&
-          //   verifyPawnEnPassant(selectedPiece, selectedPos, clickedPos, previousMove)
-          // ) {
-          //   const killPiecePos = { x: clickedPos.x, y: selectedPos.y };
-          //   const newBoard = removePiece(board, killPiecePos);
-          //   return getNewMovedState(
-          //     newBoard,
-          //     moveList,
-          //     selectedPos,
-          //     selectedPiece,
-          //     clickedPos,
-          //     killPiecePos,
-          //     killPiecePos
-          //   );
-          // }
+          const previousMove = moveList.length && moveList[moveList.length - 1];
+          if (
+            previousMove &&
+            verifyPawnEnPassant(selectedPiece, selectedPos, clickedPos, previousMove)
+          ) {
+            const killPiecePos = { x: clickedPos.x, y: selectedPos.y };
+            const newData = removePiece(board, killList, killPiecePos);
+
+            return {
+              ...getNewMovedState(
+                newData.board,
+                newData.killList,
+                moveList,
+                selectedPos,
+                selectedPiece,
+                clickedPos
+              ),
+              playerTurn: changePlaceTurn(playerTurn)
+            };
+          }
 
           if (!verifyMove(board, selectedPiece, selectedPos, clickedPos)) {
             console.log(`${JSON.stringify(clickedPos)} is not a valid move`);
             return {};
           }
-          return getNewMovedState(
-            board,
-            killedPieces,
-            moveList,
-            selectedPos,
-            selectedPiece,
-            clickedPos,
-            clickedPiece
-          );
+          return {
+            ...getNewMovedState(
+              board,
+              killList,
+              moveList,
+              selectedPos,
+              selectedPiece,
+              clickedPos,
+              clickedPiece
+            ),
+            playerTurn: changePlaceTurn(playerTurn)
+          };
         }
       } else {
-        const selectedPos = clickedPiece ? clickedPos : null;
+        const selectedPos = clickedPiece && clickedPiece.color === playerTurn ? clickedPos : null;
         return { selectedPos };
       }
     });
@@ -129,7 +142,7 @@ class GameBoardBase extends React.Component {
 
   render() {
     const { className } = this.props;
-    const { board, selectedPos, killedPieces } = this.state;
+    const { board, selectedPos, killList } = this.state;
 
     let rowColor = "#fff";
     return (
@@ -164,7 +177,7 @@ class GameBoardBase extends React.Component {
             return row;
           })}
         </div>
-        <KillList killList={killedPieces} />
+        <KillList killList={killList} />
       </div>
     );
   }

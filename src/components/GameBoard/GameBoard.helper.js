@@ -15,6 +15,19 @@ const setPiece = (piecePosition, piece, board) => {
     : { hasMoved: false, validMove: false });
 };
 
+const removePiece = (board, killList, position) => {
+  const newBoard = deepClone(board);
+  const newKillList = deepClone(killList);
+
+  newKillList.push(board[position.y][position.x]);
+  setPiece(position, null, newBoard);
+
+  return {
+    board: newBoard,
+    killList: newKillList
+  };
+};
+
 const getMovedPieceBoard = (
   currentBoard,
   selectedPos,
@@ -51,7 +64,7 @@ const getNewMoveList = (moveList, selectedPos, selectedPiece, clickedPos, clicke
 
 const getNewMovedState = (
   board,
-  killedPieces,
+  killList,
   moveList,
   selectedPos,
   selectedPiece,
@@ -59,7 +72,7 @@ const getNewMovedState = (
   clickedPiece,
   killPiece = true
 ) => {
-  const newKillPieces = deepClone(killedPieces);
+  const newKillPieces = deepClone(killList);
   const newBoard = getMovedPieceBoard(
     board,
     selectedPos,
@@ -85,7 +98,7 @@ const getNewMovedState = (
     board: newBoard,
     selectedPos: null,
     moveList: newMoveList,
-    killedPieces: newKillPieces
+    killList: newKillPieces
   };
 };
 
@@ -369,6 +382,7 @@ export {
   comparePosition,
   getNewMovedState,
   getPiece,
+  removePiece,
   setHighlightedMoves,
   setPiece,
   verifyKingCastle,
