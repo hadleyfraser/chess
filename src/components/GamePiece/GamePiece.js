@@ -3,8 +3,10 @@ import styled from "styled-components";
 import * as PropTypes from "prop-types";
 import { CELL_WIDTH } from "../../utils/constants";
 
-const GamePieceBase = ({ className, code }) => (
-  <div className={className} dangerouslySetInnerHTML={{ __html: code }} />
+const codes = require("../../utils/piece-list.json");
+
+const GamePieceBase = ({ className, piece: { color, name } }) => (
+  <div className={className} dangerouslySetInnerHTML={{ __html: codes[`${color}-${name}`] }} />
 );
 
 const GamePiece = styled(GamePieceBase)`
@@ -28,7 +30,7 @@ const GamePiece = styled(GamePieceBase)`
 `;
 
 GamePiece.propTypes = {
-  code: PropTypes.string.isRequired,
+  piece: PropTypes.object.isRequired,
   selected: PropTypes.bool,
   size: PropTypes.number
 };

@@ -9,11 +9,15 @@ import {
   removePiece,
   verifyKingCastle,
   verifyMove,
-  verifyPawnEnPassant
+  verifyPawnEnPassant,
+  verifyPawnUpgrade
 } from "./GameBoard.helper";
 import Cell from "../Cells/Cell";
 import GamePiece from "../GamePiece/GamePiece";
 import KillList from "../KillList/KillList";
+import Overlay from "../Overlay/Overlay";
+import PieceList from "../PieceList/PieceList";
+import { deepClone } from "../../utils/utils";
 
 const startPosition = require("../../utils/start-position.json");
 
@@ -47,6 +51,7 @@ class GameBoardBase extends React.Component {
       killList: [],
       moveList: [],
       playerTurn: "white",
+      pawnUpgrade: null,
       selectedPos: null
     };
   }
@@ -120,7 +125,8 @@ class GameBoardBase extends React.Component {
             console.log(`${JSON.stringify(clickedPos)} is not a valid move`);
             return {};
           }
-          return {
+
+          const newState = {
             ...getNewMovedState(
               board,
               killList,
@@ -132,6 +138,15 @@ class GameBoardBase extends React.Component {
             ),
             playerTurn: changePlaceTurn(playerTurn)
           };
+
+          if (verifyPawnUpgrade(selectedPiece, clickedPos)) {
+            newState.pawnUpgrade = {
+              piece: selectedPiece,
+              position: clickedPos
+            };
+          }
+
+          return newState;
         }
       } else {
         const selectedPos = clickedPiece && clickedPiece.color === playerTurn ? clickedPos : null;
@@ -140,26 +155,42 @@ class GameBoardBase extends React.Component {
     });
   };
 
+  upgradePawn = (position, newPiece) => {
+    this.setState(({ board }) => {
+      const newBoard = deepClone(board);
+      newBoard[position.y][position.x].name = newPiece;
+      return {
+        board: newBoard,
+        pawnUpgrade: null
+      };
+    });
+  };
+
   render() {
     const { className } = this.props;
-    const { board, selectedPos, killList } = this.state;
+    const { board, selectedPos, killList, pawnUpgrade } = this.state;
 
     let rowColor = "#fff";
     return (
       <div className={className}>
         <div className="gameboard">
+          {pawnUpgrade && (
+            <Overlay>
+              <PieceList pawnUpgrade={pawnUpgrade} selectPiece={this.upgradePawn} />
+            </Overlay>
+          )}
           {board.map((boardRow, rowIndex) => {
             const row = (
               <Row color={rowColor} key={rowIndex}>
-                {boardRow.map((cell, colIndex) => (
+                {boardRow.map((piece, colIndex) => (
                   <Cell
                     key={`${rowIndex}${colIndex}`}
                     onClick={() => this._clickCell({ x: colIndex, y: rowIndex })}
-                    validMove={cell.validMove}
+                    validMove={piece.validMove}
                   >
-                    {cell.name && (
+                    {piece.name && (
                       <GamePiece
-                        code={cell.code}
+                        piece={piece}
                         selected={
                           selectedPos &&
                           comparePosition(selectedPos, {
@@ -184,12 +215,13 @@ class GameBoardBase extends React.Component {
 }
 
 const GameBoard = styled(GameBoardBase)`
-  width: 800px;
+  width: 700px;
   margin: 0 auto;
   display: flex;
   justify-content: space-between;
 
   .gameboard {
+    position: relative;
     border: solid 2px black;
   }
 `;

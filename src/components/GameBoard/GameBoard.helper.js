@@ -1,4 +1,5 @@
 import { deepClone } from "../../utils/utils";
+import { CELL_LIMIT } from "../../utils/constants";
 
 const getPiece = (piecePosition, board) => {
   const piece = board[piecePosition.y][piecePosition.x];
@@ -267,6 +268,15 @@ const verifyPawnEnPassant = (piece, currentPos, destination, previousMove) => {
   return true;
 };
 
+const verifyPawnUpgrade = (selectedPiece, clickedPos) => {
+  const { color, name } = selectedPiece;
+  const { y } = clickedPos;
+  return (
+    name === "pawn" &&
+    ((color === "white" && y === CELL_LIMIT - 1) || (color === "black" && y === 0))
+  );
+};
+
 const verifyHorizontalMovement = (board, piece, currentPos, destination) => {
   if (!piece) {
     return false;
@@ -364,15 +374,17 @@ const inTheDangerZone = (board, color, destination) => {
       return true;
     }
 
-    row.some((piece, pieceIndex) => {
+    row.some((piece, colIndex) => {
       if (!piece.color || color === piece.color) {
-        return;
+        return false;
       }
 
-      dangerZone = verifyMove(board, piece, { x: pieceIndex, y: rowIndex }, destination);
+      dangerZone = verifyMove(board, piece, { x: colIndex, y: rowIndex }, destination);
 
       return dangerZone;
     });
+
+    return false;
   });
 
   return dangerZone;
@@ -387,5 +399,6 @@ export {
   setPiece,
   verifyKingCastle,
   verifyMove,
-  verifyPawnEnPassant
+  verifyPawnEnPassant,
+  verifyPawnUpgrade
 };

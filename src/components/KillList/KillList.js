@@ -21,7 +21,7 @@ const KillListBase = ({ className, killList }) => {
         {Object.keys(splitKillList).map((color, killOrder) => (
           <div key={color}>
             {splitKillList[color].map((kill) => (
-              <GamePiece key={kill.killOrder} code={kill.code} size={24} />
+              <GamePiece key={kill.killOrder} piece={kill} size={24} />
             ))}
           </div>
         ))}
