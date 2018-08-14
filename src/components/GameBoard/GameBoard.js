@@ -6,7 +6,7 @@ import {
   comparePosition,
   getNewMovedState,
   getPiece,
-  setHighlightedMoves,
+  removePiece,
   verifyKingCastle,
   verifyMove,
   verifyPawnEnPassant
@@ -70,7 +70,6 @@ class GameBoardBase extends React.Component {
       if (selectedPos) {
         if (comparePosition(selectedPos, clickedPos)) {
           return {
-            board: board,
             selectedPos: null
           };
         } else {
@@ -87,13 +86,14 @@ class GameBoardBase extends React.Component {
             );
           }
 
-          // const previousMove = moveList.length && moveList[moveList.length - 1];
-          // if (
-          //   previousMove &&
-          //   verifyPawnEnPassant(selectedPiece, selectedPos, clickedPos, previousMove)
-          // ) {
-          //   // getMovedPieceBoard(board, selectedPos, selectedPiece, clickedPos);
-          // }
+          const previousMove = moveList.length && moveList[moveList.length - 1];
+          if (
+            previousMove &&
+            verifyPawnEnPassant(selectedPiece, selectedPos, clickedPos, previousMove)
+          ) {
+            const newBoard = removePiece(board, { x: clickedPos.x, y: selectedPos.y });
+            return getNewMovedState(newBoard, moveList, selectedPos, selectedPiece, clickedPos);
+          }
 
           if (!verifyMove(board, selectedPiece, selectedPos, clickedPos)) {
             console.log(`${JSON.stringify(clickedPos)} is not a valid move`);

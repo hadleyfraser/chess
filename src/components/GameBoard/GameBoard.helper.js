@@ -7,14 +7,21 @@ const getPiece = (piecePosition, board) => {
   return piece && piece.name ? piece : null;
 };
 
-const setPiece = (piecePosition, piece, board) =>
-  (board[piecePosition.y][piecePosition.x] = piece
+const setPiece = (piecePosition, piece, board) => {
+  return (board[piecePosition.y][piecePosition.x] = piece
     ? {
         ...piece,
         hasMoved: true,
         validMove: false
       }
     : { hasMoved: false, validMove: false });
+};
+
+const removePiece = (board, position) => {
+  const newBoard = deepClone(board);
+  setPiece(position, null, newBoard);
+  return newBoard;
+};
 
 const getMovedPieceBoard = (currentBoard, selectedPos, selectedPiece, clickedPos, clickedPiece) => {
   const newBoard = deepClone(currentBoard);
@@ -342,6 +349,7 @@ export {
   comparePosition,
   getNewMovedState,
   getPiece,
+  removePiece,
   setHighlightedMoves,
   setPiece,
   verifyKingCastle,
