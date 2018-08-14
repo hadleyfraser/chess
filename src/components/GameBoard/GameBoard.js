@@ -13,6 +13,7 @@ import {
 } from "./GameBoard.helper";
 import Cell from "../Cells/Cell";
 import GamePiece from "../GamePiece/GamePiece";
+import KillList from "../KillList/KillList";
 
 const startPosition = require("../../utils/start-position.json");
 
@@ -43,7 +44,8 @@ class GameBoardBase extends React.Component {
     this.state = {
       board: this._getInitialBoard(),
       selectedPos: null,
-      moveList: []
+      moveList: [],
+      killedPieces: []
     };
   }
 
@@ -64,7 +66,7 @@ class GameBoardBase extends React.Component {
 
   _clickCell = (clickedPos) => {
     this.setState((prevState) => {
-      const { board, moveList, selectedPos } = prevState;
+      const { board, killedPieces, moveList, selectedPos } = prevState;
       const clickedPiece = getPiece(clickedPos, board);
 
       if (selectedPos) {
@@ -78,28 +80,47 @@ class GameBoardBase extends React.Component {
           if (verifyKingCastle(board, selectedPiece, selectedPos, clickedPos)) {
             return getNewMovedState(
               board,
+              killedPieces,
               moveList,
               selectedPos,
               selectedPiece,
               clickedPos,
-              clickedPiece
+              clickedPiece,
+              false
             );
           }
 
-          const previousMove = moveList.length && moveList[moveList.length - 1];
-          if (
-            previousMove &&
-            verifyPawnEnPassant(selectedPiece, selectedPos, clickedPos, previousMove)
-          ) {
-            const newBoard = removePiece(board, { x: clickedPos.x, y: selectedPos.y });
-            return getNewMovedState(newBoard, moveList, selectedPos, selectedPiece, clickedPos);
-          }
+          // const previousMove = moveList.length && moveList[moveList.length - 1];
+          // if (
+          //   previousMove &&
+          //   verifyPawnEnPassant(selectedPiece, selectedPos, clickedPos, previousMove)
+          // ) {
+          //   const killPiecePos = { x: clickedPos.x, y: selectedPos.y };
+          //   const newBoard = removePiece(board, killPiecePos);
+          //   return getNewMovedState(
+          //     newBoard,
+          //     moveList,
+          //     selectedPos,
+          //     selectedPiece,
+          //     clickedPos,
+          //     killPiecePos,
+          //     killPiecePos
+          //   );
+          // }
 
           if (!verifyMove(board, selectedPiece, selectedPos, clickedPos)) {
             console.log(`${JSON.stringify(clickedPos)} is not a valid move`);
             return {};
           }
-          return getNewMovedState(board, moveList, selectedPos, selectedPiece, clickedPos);
+          return getNewMovedState(
+            board,
+            killedPieces,
+            moveList,
+            selectedPos,
+            selectedPiece,
+            clickedPos,
+            clickedPiece
+          );
         }
       } else {
         const selectedPos = clickedPiece ? clickedPos : null;
@@ -110,48 +131,56 @@ class GameBoardBase extends React.Component {
 
   render() {
     const { className } = this.props;
-    const { board, selectedPos } = this.state;
+    const { board, selectedPos, killedPieces } = this.state;
 
     let rowColor = "#fff";
     return (
       <div className={className}>
-        {board.map((boardRow, rowIndex) => {
-          const row = (
-            <Row color={rowColor} key={rowIndex}>
-              {boardRow.map((cell, colIndex) => (
-                <Cell
-                  key={`${rowIndex}${colIndex}`}
-                  onClick={() => this._clickCell({ x: colIndex, y: rowIndex })}
-                  validMove={cell.validMove}
-                >
-                  {cell.name && (
-                    <GamePiece
-                      code={cell.code}
-                      selected={
-                        selectedPos &&
-                        comparePosition(selectedPos, {
-                          x: colIndex,
-                          y: rowIndex
-                        })
-                      }
-                    />
-                  )}
-                </Cell>
-              ))}
-            </Row>
-          );
-          rowColor = switchColor(rowColor);
-          return row;
-        })}
+        <div className="gameboard">
+          {board.map((boardRow, rowIndex) => {
+            const row = (
+              <Row color={rowColor} key={rowIndex}>
+                {boardRow.map((cell, colIndex) => (
+                  <Cell
+                    key={`${rowIndex}${colIndex}`}
+                    onClick={() => this._clickCell({ x: colIndex, y: rowIndex })}
+                    validMove={cell.validMove}
+                  >
+                    {cell.name && (
+                      <GamePiece
+                        code={cell.code}
+                        selected={
+                          selectedPos &&
+                          comparePosition(selectedPos, {
+                            x: colIndex,
+                            y: rowIndex
+                          })
+                        }
+                      />
+                    )}
+                  </Cell>
+                ))}
+              </Row>
+            );
+            rowColor = switchColor(rowColor);
+            return row;
+          })}
+        </div>
+        <KillList killList={killedPieces} />
       </div>
     );
   }
 }
 
 const GameBoard = styled(GameBoardBase)`
-  width: ${CELL_LIMIT * CELL_WIDTH}px;
+  width: 800px;
   margin: 0 auto;
-  border: solid 2px black;
+  display: flex;
+  justify-content: space-between;
+
+  .gameboard {
+    border: solid 2px black;
+  }
 `;
 
 export default GameBoard;

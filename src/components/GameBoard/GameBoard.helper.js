@@ -1,7 +1,5 @@
 import { deepClone } from "../../utils/utils";
 
-// const capitalize = (str) => `${str.charAt(0).toUpperCase()}${str.slice(1)}`;
-
 const getPiece = (piecePosition, board) => {
   const piece = board[piecePosition.y][piecePosition.x];
   return piece && piece.name ? piece : null;
@@ -23,10 +21,17 @@ const removePiece = (board, position) => {
   return newBoard;
 };
 
-const getMovedPieceBoard = (currentBoard, selectedPos, selectedPiece, clickedPos, clickedPiece) => {
+const getMovedPieceBoard = (
+  currentBoard,
+  selectedPos,
+  selectedPiece,
+  clickedPos,
+  clickedPiece,
+  killPiece
+) => {
   const newBoard = deepClone(currentBoard);
   setPiece(clickedPos, selectedPiece, newBoard);
-  setPiece(selectedPos, clickedPiece, newBoard);
+  setPiece(selectedPos, killPiece ? null : clickedPiece, newBoard);
 
   return newBoard;
 };
@@ -52,13 +57,23 @@ const getNewMoveList = (moveList, selectedPos, selectedPiece, clickedPos, clicke
 
 const getNewMovedState = (
   board,
+  killedPieces,
   moveList,
   selectedPos,
   selectedPiece,
   clickedPos,
-  clickedPiece
+  clickedPiece,
+  killPiece = true
 ) => {
-  const newBoard = getMovedPieceBoard(board, selectedPos, selectedPiece, clickedPos, clickedPiece);
+  const newKillPieces = deepClone(killedPieces);
+  const newBoard = getMovedPieceBoard(
+    board,
+    selectedPos,
+    selectedPiece,
+    clickedPos,
+    clickedPiece,
+    killPiece
+  );
 
   const newMoveList = getNewMoveList(
     moveList,
@@ -68,10 +83,15 @@ const getNewMovedState = (
     clickedPiece
   );
 
+  if (killPiece && clickedPiece) {
+    newKillPieces.push(clickedPiece);
+  }
+
   return {
     board: newBoard,
     selectedPos: null,
-    moveList: newMoveList
+    moveList: newMoveList,
+    killedPieces: newKillPieces
   };
 };
 
@@ -97,88 +117,106 @@ const verifyMove = (board, piece, currentPos, destination) => {
   if (!piece) {
     return false;
   }
-  // const funcName = `verify${capitalize(piece.name)}Movement`;
-  switch (piece.name) {
-    case "rook":
-      return verifyRookMovement(board, piece, currentPos, destination);
-    case "bishop":
-      return verifyBishopMovement(board, piece, currentPos, destination);
-    case "knight":
-      return verifyKnightMovement(board, piece, currentPos, destination);
-    case "pawn":
-      return verifyPawnMovement(board, piece, currentPos, destination);
-    case "queen":
-      return verifyQueenMovement(board, piece, currentPos, destination);
-    case "king":
-      return verifyKingMovement(board, piece, currentPos, destination);
-    default:
-      return true;
-  }
+  return (
+    verifyMovement[piece.name] && verifyMovement[piece.name](board, piece, currentPos, destination)
+  );
 };
 
-const verifyRookMovement = (board, piece, currentPos, destination) => {
-  if (
-    (currentPos.x === destination.x && currentPos.y !== destination.y) ||
-    (currentPos.y === destination.y && currentPos.x !== destination.x)
-  ) {
-    if (currentPos.y === destination.y) {
-      return verifyHorizontalMovement(board, piece, currentPos, destination);
-    } else {
-      return verifyVerticalMovement(board, piece, currentPos, destination);
+const verifyMovement = {
+  rook: (board, piece, currentPos, destination) => {
+    if (
+      (currentPos.x === destination.x && currentPos.y !== destination.y) ||
+      (currentPos.y === destination.y && currentPos.x !== destination.x)
+    ) {
+      if (currentPos.y === destination.y) {
+        return verifyHorizontalMovement(board, piece, currentPos, destination);
+      } else {
+        return verifyVerticalMovement(board, piece, currentPos, destination);
+      }
     }
-  }
-  return false;
-};
+    return false;
+  },
+  knight: (board, piece, currentPos, destination) => {
+    const xDiff = Math.abs(currentPos.x - destination.x);
+    const yDiff = Math.abs(currentPos.y - destination.y);
 
-const verifyKnightMovement = (board, piece, currentPos, destination) => {
-  const xDiff = Math.abs(currentPos.x - destination.x);
-  const yDiff = Math.abs(currentPos.y - destination.y);
+    if ((xDiff === 2 && yDiff === 1) || (xDiff === 1 && yDiff === 2)) {
+      const collision = getPiece(destination, board);
+      if (collision && piece.color === collision.color) {
+        return false;
+      }
+      return true;
+    }
+    return false;
+  },
+  bishop: (board, piece, currentPos, destination) => {
+    const xDiff = destination.x - currentPos.x;
+    const yDiff = destination.y - currentPos.y;
 
-  if ((xDiff === 2 && yDiff === 1) || (xDiff === 1 && yDiff === 2)) {
-    const collision = getPiece(destination, board);
-    if (collision && piece.color === collision.color) {
+    if (Math.abs(xDiff) !== Math.abs(yDiff)) {
       return false;
     }
-    return true;
-  }
-  return false;
-};
 
-const verifyBishopMovement = (board, piece, currentPos, destination) => {
-  const xDiff = destination.x - currentPos.x;
-  const yDiff = destination.y - currentPos.y;
-
-  if (Math.abs(xDiff) !== Math.abs(yDiff)) {
-    return false;
-  }
-
-  return verifyDiagonalMovement(board, piece, currentPos, destination, xDiff, yDiff);
-};
-
-const verifyQueenMovement = (board, piece, currentPos, destination) => {
-  const xDiff = destination.x - currentPos.x;
-  const yDiff = destination.y - currentPos.y;
-
-  if (xDiff === 0) {
-    return verifyVerticalMovement(board, piece, currentPos, destination);
-  } else if (yDiff === 0) {
-    return verifyHorizontalMovement(board, piece, currentPos, destination);
-  } else if (Math.abs(xDiff) === Math.abs(yDiff)) {
     return verifyDiagonalMovement(board, piece, currentPos, destination, xDiff, yDiff);
-  }
-  return false;
-};
+  },
+  queen: (board, piece, currentPos, destination) => {
+    const xDiff = destination.x - currentPos.x;
+    const yDiff = destination.y - currentPos.y;
 
-const verifyKingMovement = (board, piece, currentPos, destination) => {
-  const xDiff = destination.x - currentPos.x;
-  const yDiff = destination.y - currentPos.y;
+    if (xDiff === 0) {
+      return verifyVerticalMovement(board, piece, currentPos, destination);
+    } else if (yDiff === 0) {
+      return verifyHorizontalMovement(board, piece, currentPos, destination);
+    } else if (Math.abs(xDiff) === Math.abs(yDiff)) {
+      return verifyDiagonalMovement(board, piece, currentPos, destination, xDiff, yDiff);
+    }
+    return false;
+  },
+  king: (board, piece, currentPos, destination) => {
+    const xDiff = destination.x - currentPos.x;
+    const yDiff = destination.y - currentPos.y;
 
-  if (Math.abs(xDiff) > 1 || Math.abs(yDiff) > 1) {
+    if (Math.abs(xDiff) > 1 || Math.abs(yDiff) > 1) {
+      return false;
+    }
+
+    const collision = getPiece(destination, board);
+    return collision || piece.color !== collision.color;
+  },
+  pawn: (board, piece, currentPos, destination) => {
+    const xDiff = destination.x - currentPos.x;
+    const yDiff = destination.y - currentPos.y;
+
+    const absXDiff = Math.abs(xDiff);
+    const absYDiff = Math.abs(yDiff);
+
+    const collision = getPiece(destination, board);
+
+    if (
+      yDiff === 0 ||
+      (piece.color === "black" && yDiff > 0) ||
+      (piece.color === "white" && yDiff < 0)
+    ) {
+      return false;
+    }
+
+    if (absXDiff === 0) {
+      if (
+        ((absYDiff === 1 || absYDiff === 2) && collision) ||
+        (absYDiff === 2 && piece.hasMoved) ||
+        absYDiff > 2
+      ) {
+        return false;
+      }
+      return true;
+    } else if (absXDiff === 1 && absYDiff === 1) {
+      if (collision && piece.color !== collision.color) {
+        return true;
+      }
+    }
+
     return false;
   }
-
-  const collision = getPiece(destination, board);
-  return collision || piece.color !== collision.color;
 };
 
 const verifyKingCastle = (board, piece, currentPos, destination) => {
@@ -199,41 +237,6 @@ const verifyKingCastle = (board, piece, currentPos, destination) => {
   verificationBoard[destination.y][destination.x].color = verificationColor;
 
   return verifyHorizontalMovement(verificationBoard, piece, currentPos, destination);
-};
-
-const verifyPawnMovement = (board, piece, currentPos, destination) => {
-  const xDiff = destination.x - currentPos.x;
-  const yDiff = destination.y - currentPos.y;
-
-  const absXDiff = Math.abs(xDiff);
-  const absYDiff = Math.abs(yDiff);
-
-  const collision = getPiece(destination, board);
-
-  if (
-    yDiff === 0 ||
-    (piece.color === "black" && yDiff > 0) ||
-    (piece.color === "white" && yDiff < 0)
-  ) {
-    return false;
-  }
-
-  if (absXDiff === 0) {
-    if (
-      ((absYDiff === 1 || absYDiff === 2) && collision) ||
-      (absYDiff === 2 && piece.hasMoved) ||
-      absYDiff > 2
-    ) {
-      return false;
-    }
-    return true;
-  } else if (absXDiff === 1 && absYDiff === 1) {
-    if (collision && piece.color !== collision.color) {
-      return true;
-    }
-  }
-
-  return false;
 };
 
 const verifyPawnEnPassant = (piece, currentPos, destination, previousMove) => {

@@ -9,21 +9,21 @@ const CellBase = ({ className, children, validMove, ...rest }) => (
   </div>
 );
 
-CellBase.propTypes = {
-  className: PropTypes.string,
-  onClick: PropTypes.func.isRequired,
-  validMove: PropTypes.bool
-};
-
-CellBase.defaultProps = {
-  className: "",
-  validMove: false
-};
-
 const Cell = styled(CellBase)`
   width: ${CELL_WIDTH}px;
   height: ${CELL_WIDTH}px;
   border: solid 2px ${({ validMove }) => (validMove ? "red" : "transparent")};
 `;
+
+Cell.propTypes = {
+  className: PropTypes.string,
+  onClick: PropTypes.func.isRequired,
+  validMove: PropTypes.bool
+};
+
+Cell.defaultProps = {
+  className: "",
+  validMove: false
+};
 
 export default Cell;

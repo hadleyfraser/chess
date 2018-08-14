@@ -7,17 +7,8 @@ const GamePieceBase = ({ className, code }) => (
   <div className={className} dangerouslySetInnerHTML={{ __html: code }} />
 );
 
-GamePieceBase.propTypes = {
-  code: PropTypes.string.isRequired,
-  selected: PropTypes.bool
-};
-
-GamePieceBase.defaultProps = {
-  selected: false
-};
-
 const GamePiece = styled(GamePieceBase)`
-  font-size: 40px;
+  font-size: ${({ size }) => size}px;
   cursor: pointer;
   text-align: center;
   ${({ selected }) => selected && `animation: bounce 1s infinite;`};
@@ -35,5 +26,16 @@ const GamePiece = styled(GamePieceBase)`
     }
   }
 `;
+
+GamePiece.propTypes = {
+  code: PropTypes.string.isRequired,
+  selected: PropTypes.bool,
+  size: PropTypes.number
+};
+
+GamePiece.defaultProps = {
+  selected: false,
+  size: 40
+};
 
 export default GamePiece;
