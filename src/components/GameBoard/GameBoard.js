@@ -1,15 +1,13 @@
 import React from "react";
 import styled from "styled-components";
 import getDeepProp from "lodash.get";
-import { CELL_LIMIT, CELL_WIDTH } from "../../utils/constants";
+import { CELL_LIMIT } from "../../utils/constants";
 import {
   comparePosition,
   getNewMovedState,
   getPiece,
-  removePiece,
   verifyKingCastle,
-  verifyMove,
-  verifyPawnEnPassant
+  verifyMove
 } from "./GameBoard.helper";
 import Cell from "../Cells/Cell";
 import GamePiece from "../GamePiece/GamePiece";

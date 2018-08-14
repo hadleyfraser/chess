@@ -15,12 +15,6 @@ const setPiece = (piecePosition, piece, board) => {
     : { hasMoved: false, validMove: false });
 };
 
-const removePiece = (board, position) => {
-  const newBoard = deepClone(board);
-  setPiece(position, null, newBoard);
-  return newBoard;
-};
-
 const getMovedPieceBoard = (
   currentBoard,
   selectedPos,
@@ -181,7 +175,9 @@ const verifyMovement = {
     }
 
     const collision = getPiece(destination, board);
-    return collision || piece.color !== collision.color;
+    const dangerZone = inTheDangerZone(board, piece.color, destination);
+
+    return !dangerZone && (!collision || piece.color !== collision.color);
   },
   pawn: (board, piece, currentPos, destination) => {
     const xDiff = destination.x - currentPos.x;
@@ -348,11 +344,31 @@ const verifyDiagonalMovement = (board, piece, currentPos, destination, xDiff, yD
   return true;
 };
 
+const inTheDangerZone = (board, color, destination) => {
+  let dangerZone = false;
+  board.some((row, rowIndex) => {
+    if (dangerZone) {
+      return true;
+    }
+
+    row.some((piece, pieceIndex) => {
+      if (!piece.color || color === piece.color) {
+        return;
+      }
+
+      dangerZone = verifyMove(board, piece, { x: pieceIndex, y: rowIndex }, destination);
+
+      return dangerZone;
+    });
+  });
+
+  return dangerZone;
+};
+
 export {
   comparePosition,
   getNewMovedState,
   getPiece,
-  removePiece,
   setHighlightedMoves,
   setPiece,
   verifyKingCastle,
