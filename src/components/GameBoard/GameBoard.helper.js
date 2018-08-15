@@ -96,7 +96,7 @@ const getNewMovedState = (
   }
 
   return {
-    board: newBoard,
+    board: setHighlightedMoves(newBoard),
     selectedPos: null,
     moveList: newMoveList,
     killList: newKillPieces
@@ -234,6 +234,7 @@ const verifyKingCastle = (board, piece, currentPos, destination) => {
 
   if (
     !collision ||
+    !["rook", "king"].includes(piece.name) ||
     !["rook", "king"].includes(collision.name) ||
     collision.hasMoved ||
     piece.hasMoved
@@ -258,6 +259,7 @@ const verifyPawnEnPassant = (piece, currentPos, destination, previousMove) => {
     piece.name !== "pawn" ||
     otherPiece.name !== "pawn" ||
     to.x !== destination.x ||
+    to.y !== currentPos.y ||
     Math.abs(xDiff) !== 1 ||
     Math.abs(yDiff) !== 1 ||
     Math.abs(to.y - from.y) !== 2

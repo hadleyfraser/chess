@@ -7,6 +7,7 @@ import {
   getNewMovedState,
   getPiece,
   removePiece,
+  setHighlightedMoves,
   verifyKingCastle,
   verifyMove,
   verifyPawnEnPassant,
@@ -79,7 +80,8 @@ class GameBoardBase extends React.Component {
       if (selectedPos) {
         if (comparePosition(selectedPos, clickedPos)) {
           return {
-            selectedPos: null
+            selectedPos: null,
+            board: setHighlightedMoves(board)
           };
         } else {
           const selectedPiece = getPiece(selectedPos, board);
@@ -149,8 +151,14 @@ class GameBoardBase extends React.Component {
           return newState;
         }
       } else {
-        const selectedPos = clickedPiece && clickedPiece.color === playerTurn ? clickedPos : null;
-        return { selectedPos };
+        const sameColor = clickedPiece && clickedPiece.color === playerTurn;
+        const newState = {
+          selectedPos: clickedPiece && sameColor ? clickedPos : null
+        };
+        if (sameColor) {
+          newState.board = setHighlightedMoves(board, clickedPos);
+        }
+        return newState;
       }
     });
   };
