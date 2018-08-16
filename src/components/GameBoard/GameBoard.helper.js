@@ -1,6 +1,8 @@
 import { deepClone } from "../../utils/utils";
 import { CELL_LIMIT } from "../../utils/constants";
 
+const changePlayerColor = (color) => (color === "white" ? "black" : "white");
+
 const getPiece = (piecePosition, board) => {
   const piece = board[piecePosition.y][piecePosition.x];
   return piece && piece.name ? piece : null;
@@ -95,8 +97,17 @@ const getNewMovedState = (
     newKillPieces.push(clickedPiece);
   }
 
+  const kingPos = getKingPosition(newBoard, changePlayerColor(selectedPiece.color));
+  let checkmate = false;
+  const kingInCheck = inCheck(newBoard, getPiece(kingPos, newBoard), kingPos);
+  if (kingInCheck) {
+    checkmate = inCheckmate(newBoard, getPiece(kingPos, newBoard), kingPos);
+  }
+
   return {
     board: setHighlightedMoves(newBoard),
+    checkmate,
+    inCheck: kingInCheck,
     selectedPos: null,
     moveList: newMoveList,
     killList: newKillPieces
@@ -106,15 +117,16 @@ const getNewMovedState = (
 const setHighlightedMoves = (board, selectedPos) => {
   const newBoard = deepClone(board);
   return newBoard.map((row, rowIndex) =>
-    row.map((cell, cellIndex) => {
+    row.map((piece, cellIndex) => {
       if (selectedPos) {
         const selectedPiece = getPiece(selectedPos, newBoard);
         const checkMovePos = { x: cellIndex, y: rowIndex };
-        cell.validMove = selectedPos && verifyMove(board, selectedPiece, selectedPos, checkMovePos);
+        piece.validMove =
+          selectedPos && verifyMove(board, selectedPiece, selectedPos, checkMovePos);
       } else {
-        cell.validMove = false;
+        piece.validMove = false;
       }
-      return cell;
+      return piece;
     })
   );
 };
@@ -189,7 +201,7 @@ const verifyMovement = {
     }
 
     const collision = getPiece(destination, board);
-    const dangerZone = inTheDangerZone(board, piece.color, destination);
+    const dangerZone = inTheDangerZone(board, piece.color, destination, currentPos);
 
     return !dangerZone && (!collision || piece.color !== collision.color);
   },
@@ -369,8 +381,33 @@ const verifyDiagonalMovement = (board, piece, currentPos, destination, xDiff, yD
   return true;
 };
 
-const inTheDangerZone = (board, color, destination) => {
+const getKingPosition = (board, color) => {
+  let kingPos = null;
+  board.some((row, rowIndex) => {
+    if (kingPos) {
+      return true;
+    }
+
+    row.map((piece, colIndex) => {
+      if (piece.color === color && piece.name === "king") {
+        kingPos = { x: colIndex, y: rowIndex };
+        return true;
+      }
+      return false;
+    });
+    return false;
+  });
+
+  return kingPos;
+};
+
+const inTheDangerZone = (board, color, destination, currentPos) => {
   let dangerZone = false;
+  const dummyBoard = deepClone(board);
+  if (currentPos) {
+    setPiece(currentPos, null, dummyBoard);
+  }
+
   board.some((row, rowIndex) => {
     if (dangerZone) {
       return true;
@@ -381,7 +418,12 @@ const inTheDangerZone = (board, color, destination) => {
         return false;
       }
 
-      dangerZone = verifyMove(board, piece, { x: colIndex, y: rowIndex }, destination);
+      const destinationPiece = dummyBoard[rowIndex][colIndex];
+      if (destinationPiece.name) {
+        dummyBoard[rowIndex][colIndex].color = color;
+      }
+
+      dangerZone = verifyMove(dummyBoard, piece, { x: colIndex, y: rowIndex }, destination);
 
       return dangerZone;
     });
@@ -392,7 +434,29 @@ const inTheDangerZone = (board, color, destination) => {
   return dangerZone;
 };
 
+const inCheck = (board, piece, destination) => inTheDangerZone(board, piece.color, destination);
+
+const inCheckmate = (board, kingPiece, position) => {
+  let validMove = false;
+  board.some((row, rowIndex) => {
+    if (validMove) {
+      return true;
+    }
+
+    row.some((_, cellIndex) => {
+      const checkMovePos = { x: cellIndex, y: rowIndex };
+      validMove = verifyMove(board, kingPiece, position, checkMovePos);
+      return validMove;
+    });
+
+    return false;
+  });
+
+  return !validMove;
+};
+
 export {
+  changePlayerColor,
   comparePosition,
   getNewMovedState,
   getPiece,

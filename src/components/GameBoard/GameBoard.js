@@ -3,6 +3,7 @@ import styled from "styled-components";
 import getDeepProp from "lodash.get";
 import { CELL_LIMIT } from "../../utils/constants";
 import {
+  changePlayerColor,
   comparePosition,
   getNewMovedState,
   getPiece,
@@ -23,7 +24,6 @@ import { deepClone } from "../../utils/utils";
 const startPosition = require("../../utils/start-position.json");
 
 const switchColor = (color) => (color === "#fff" ? "#ccc" : "#fff");
-const changePlaceTurn = (color) => (color === "white" ? "black" : "white");
 
 const emptyCell = {
   hasMoved: false,
@@ -49,6 +49,8 @@ class GameBoardBase extends React.Component {
 
     this.state = {
       board: this._getInitialBoard(),
+      checkmate: false,
+      inCheck: false,
       killList: [],
       moveList: [],
       playerTurn: "white",
@@ -73,6 +75,10 @@ class GameBoardBase extends React.Component {
   };
 
   _clickCell = (clickedPos) => {
+    if (this.state.checkmate) {
+      return;
+    }
+
     this.setState((prevState) => {
       const { board, killList, moveList, playerTurn, selectedPos } = prevState;
       const clickedPiece = getPiece(clickedPos, board);
@@ -98,7 +104,7 @@ class GameBoardBase extends React.Component {
                 clickedPiece,
                 false
               ),
-              playerTurn: changePlaceTurn(playerTurn)
+              playerTurn: changePlayerColor(playerTurn)
             };
           }
 
@@ -119,7 +125,7 @@ class GameBoardBase extends React.Component {
                 selectedPiece,
                 clickedPos
               ),
-              playerTurn: changePlaceTurn(playerTurn)
+              playerTurn: changePlayerColor(playerTurn)
             };
           }
 
@@ -138,7 +144,7 @@ class GameBoardBase extends React.Component {
               clickedPos,
               clickedPiece
             ),
-            playerTurn: changePlaceTurn(playerTurn)
+            playerTurn: changePlayerColor(playerTurn)
           };
 
           if (verifyPawnUpgrade(selectedPiece, clickedPos)) {
@@ -176,45 +182,48 @@ class GameBoardBase extends React.Component {
 
   render() {
     const { className } = this.props;
-    const { board, selectedPos, killList, pawnUpgrade } = this.state;
+    const { board, checkmate, inCheck, selectedPos, killList, pawnUpgrade } = this.state;
 
     let rowColor = "#fff";
     return (
       <div className={className}>
         <div className="gameboard">
-          {pawnUpgrade && (
-            <Overlay>
-              <PieceList pawnUpgrade={pawnUpgrade} selectPiece={this.upgradePawn} />
-            </Overlay>
-          )}
-          {board.map((boardRow, rowIndex) => {
-            const row = (
-              <Row color={rowColor} key={rowIndex}>
-                {boardRow.map((piece, colIndex) => (
-                  <Cell
-                    key={`${rowIndex}${colIndex}`}
-                    onClick={() => this._clickCell({ x: colIndex, y: rowIndex })}
-                    validMove={piece.validMove}
-                  >
-                    {piece.name && (
-                      <GamePiece
-                        piece={piece}
-                        selected={
-                          selectedPos &&
-                          comparePosition(selectedPos, {
-                            x: colIndex,
-                            y: rowIndex
-                          })
-                        }
-                      />
-                    )}
-                  </Cell>
-                ))}
-              </Row>
-            );
-            rowColor = switchColor(rowColor);
-            return row;
-          })}
+          <div className="board">
+            {pawnUpgrade && (
+              <Overlay>
+                <PieceList pawnUpgrade={pawnUpgrade} selectPiece={this.upgradePawn} />
+              </Overlay>
+            )}
+            {board.map((boardRow, rowIndex) => {
+              const row = (
+                <Row color={rowColor} key={rowIndex}>
+                  {boardRow.map((piece, colIndex) => (
+                    <Cell
+                      key={`${rowIndex}${colIndex}`}
+                      onClick={() => this._clickCell({ x: colIndex, y: rowIndex })}
+                      validMove={piece.validMove}
+                    >
+                      {piece.name && (
+                        <GamePiece
+                          piece={piece}
+                          selected={
+                            selectedPos &&
+                            comparePosition(selectedPos, {
+                              x: colIndex,
+                              y: rowIndex
+                            })
+                          }
+                        />
+                      )}
+                    </Cell>
+                  ))}
+                </Row>
+              );
+              rowColor = switchColor(rowColor);
+              return row;
+            })}
+          </div>
+          {inCheck && <h3>{`Check${checkmate && "mate"}`}</h3>}
         </div>
         <KillList killList={killList} />
       </div>
@@ -229,8 +238,13 @@ const GameBoard = styled(GameBoardBase)`
   justify-content: space-between;
 
   .gameboard {
-    position: relative;
-    border: solid 2px black;
+    h3 {
+      text-align: center;
+    }
+    .board {
+      position: relative;
+      border: solid 2px black;
+    }
   }
 `;
 
