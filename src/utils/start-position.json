@@ -5,11 +5,11 @@
       "color": "white"
     },
     "1": {
-      "name": "bishop",
+      "name": "knight",
       "color": "white"
     },
     "2": {
-      "name": "knight",
+      "name": "bishop",
       "color": "white"
     },
     "3": {
@@ -21,11 +21,11 @@
       "color": "white"
     },
     "5": {
-      "name": "knight",
+      "name": "bishop",
       "color": "white"
     },
     "6": {
-      "name": "bishop",
+      "name": "knight",
       "color": "white"
     },
     "7": {
@@ -107,27 +107,27 @@
       "color": "black"
     },
     "1": {
-      "name": "bishop",
+      "name": "knight",
       "color": "black"
     },
     "2": {
-      "name": "knight",
+      "name": "bishop",
       "color": "black"
     },
     "3": {
-      "name": "queen",
-      "color": "black"
-    },
-    "4": {
       "name": "king",
       "color": "black"
     },
+    "4": {
+      "name": "queen",
+      "color": "black"
+    },
     "5": {
-      "name": "knight",
+      "name": "bishop",
       "color": "black"
     },
     "6": {
-      "name": "bishop",
+      "name": "knight",
       "color": "black"
     },
     "7": {

@@ -361,6 +361,10 @@ const verifyDiagonalMovement = (board, piece, currentPos, destination, xDiff, yD
     newX += xMove;
     newY += yMove;
 
+    if (newX === CELL_LIMIT || newY === CELL_LIMIT) {
+      return false;
+    }
+
     const newPos = {
       x: newX,
       y: newY
